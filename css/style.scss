@@ -236,6 +236,7 @@ header{
     margin-bottom: 50px;
     border-radius: 10px;
     box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.25);
+    transition: 0.3s;
     &__top{
         display: flex;
         flex-direction: column;
@@ -253,8 +254,8 @@ header{
 
         }
         .item-image{
-            max-width: 200px;
-            max-height: 200px;
+            width: 200px;
+            height: 200px;
             margin: 14px 0 25px 0;
             
             img{
@@ -284,10 +285,12 @@ header{
             &__check{
                 width: 15px;
                 height: 15px;
+                margin-right: 5px;
                 border: 1px solid #1BC943;
                 border-radius: 50%;
             }
             &__amount-of-items{
+                margin-right: 5px;
                 font-weight: 700;
             }
         }
@@ -335,7 +338,10 @@ header{
         }
     }
 }
-
+.card:hover{
+    transform: scale(1.05);
+    cursor: pointer;
+}
 // Modal window. Item show
 
 .modal{
@@ -452,6 +458,16 @@ header{
                 margin: 30px 0;
                 border-radius: 5px;
             }
+            button[disabled]{
+                background-color: #50555e;
+                cursor: auto;
+            }
+            button[disabled]:hover{
+                transform: none;
+            }
         }
     }
+}
+.disabled{
+    display: none;
 }

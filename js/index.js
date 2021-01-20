@@ -20,8 +20,39 @@ const gElem = (param)=>{
 
 const listContainer = gElem('.container');
 
+const renderCardBottom = device=>{
+    const cardBottom = cElem('div', 'card__bottom');
+        const favoriteFilled = cElem('div','favorite');
+        const imgFavoriteFilled = cElem('img');
+        imgFavoriteFilled.src = 'img/icons/like_filled 1.svg';
+        imgFavoriteFilled.alt = 'Image';
+        favoriteFilled.append(imgFavoriteFilled);
+        
+        const positiveReview = cElem('span', 'positive-review');
+        const textWraper = cElem('div');
+        const pRAmount = cElem('p', 'positive-review__amount')
+        pRAmount.innerText = device.orderInfo.reviews;
+        const textPR = cElem ('p');
+        textPR.innerText = '% Positive reviews';
+        textWraper.append(pRAmount, textPR);
+        
+        const pRText = cElem('p');
+        pRText.innerText = 'Above avarage';
+        positiveReview.append(textWraper, pRText);
+        
+        const ordersWraper = cElem('span', 'orders');
+        const ordersAmount = cElem('p', 'oreders__amount');
+        ordersAmount.innerText = '527'
+        const ordersText = cElem('p');
+        ordersText.innerText = 'Orders';
+        ordersWraper.append(ordersAmount, ordersText);
+    cardBottom.append(favoriteFilled, positiveReview, ordersWraper);
+    return cardBottom;
+}
+
 const renderCard = device =>{
     const card = cElem('div','card');
+    card.id = device.id;
         const cardTop = cElem('div','card__top');
             const favorite = cElem('div','favorite');
                 const imgFavorite = cElem('img');
@@ -56,7 +87,7 @@ const renderCard = device =>{
                     priceCurrency.innerText = '$';
                     priceWraper.append(textP, priceAmount, priceCurrency);
                     
-                    const btnAddToCart = cElem('button');
+                    const btnAddToCart = cElem('button', 'btn-add-to-cart');
                     btnAddToCart.innerText = 'Add to cart';
                     if(amountOfItems.innerText != 0){
                         leftInStockImg.src = 'img/icons/check 1.svg';
@@ -67,32 +98,7 @@ const renderCard = device =>{
                     }
         cardTop.append(favorite,itemImageWraper, h6, leftInStock, priceWraper, btnAddToCart);
         
-        const cardBottom = cElem('div', 'card__bottom');
-        const favoriteFilled = cElem('div','favorite');
-        const imgFavoriteFilled = cElem('img');
-        imgFavoriteFilled.src = 'img/icons/like_filled 1.svg';
-        imgFavoriteFilled.alt = 'Image';
-        favoriteFilled.append(imgFavoriteFilled);
-        
-        const positiveReview = cElem('span', 'positive-review');
-        const textWraper = cElem('div');
-        const pRAmount = cElem('p', 'positive-review__amount')
-        pRAmount.innerText = device.orderInfo.reviews;
-        const textPR = cElem ('p');
-        textPR.innerText = '% Positive reviews';
-        textWraper.append(pRAmount, textPR);
-        
-        const pRText = cElem('p');
-        pRText.innerText = 'Above avarage';
-        positiveReview.append(textWraper, pRText);
-        
-        const ordersWraper = cElem('span', 'orders');
-        const ordersAmount = cElem('p', 'oreders__amount');
-        ordersAmount.innerText = '527'
-        const ordersText = cElem('p');
-        ordersText.innerText = 'Orders';
-        ordersWraper.append(ordersAmount, ordersText);
-        cardBottom.append(favoriteFilled, positiveReview, ordersWraper);
+        const cardBottom = renderCardBottom(device);
         card.append(cardTop, cardBottom);
         
         return card;
@@ -105,3 +111,84 @@ const renderCards = list =>{
 
 renderCards(items);
 
+//   Render modal window of element
+
+
+const modalWindow = document.querySelector('#modal');
+const renderModal = (device)=>{
+    const cardBottom = renderCardBottom(device);
+    console.log(cardBottom);
+    const modalItemSpecifications = cElem('div', 'modal-item-specifications');
+    let btnDisabled = device.orderInfo.inStock == 0 ? 'disabled':''
+    const modalContent = cElem('div', 'modal__content');
+    modalContent.innerHTML = `
+    <div class="modal__content__left">
+        <div class="modal-item-image">
+            <img src="img/${device.imgUrl}" alt="image">
+        </div>
+    </div>
+    <div class="modal__content__middle">
+        <div class="modal__content__middle__wraper">
+            <h3 class="item-title">${device.name}</h3>
+            <div class="from-card__bottom">
+                <div class="card__bottom">
+                    ${cardBottom.innerHTML}
+                </div>
+            </div>
+            <div class="modal-item-specifications">
+                
+            </div>
+        </div>
+    </div>
+    <div class="modal__content__right">
+        <div class="modal-item-price">
+            <p>$</p><p>${device.price}</p>
+        </div>
+        <div class="modal-stock">
+            <p>Stock:</p><p>${device.orderInfo.inStock}</p><p>pcs.</p>
+        </div>
+        <button class="btn-add-to-cart"${btnDisabled}>Add to cart</button>
+    </div>
+    `
+    modalWindow.append(modalContent);
+}
+
+// Hide and clear madal window
+modalWindow.addEventListener('click', event =>{
+    if(event.target.className === 'modal'){
+       event.target.innerText='';
+       event.target.className += " disabled";
+    };
+})
+
+
+const container = document.querySelector('.container');
+const card = document.querySelectorAll('.card');
+const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
+
+// Show and render modal Window
+
+card.forEach(el => el.addEventListener('click', event =>{
+    event.path.forEach(el => 
+            {if(el.className === 'card'){
+                const item = items.find(dev=>dev.id == el.id)
+                renderModal(item);
+                modalWindow.setAttribute('class', 'modal');
+        }
+    });
+}));
+
+// Add to cart
+
+btnAddToCart.forEach(el => el.addEventListener('click', event =>{
+        console.log('btn');
+        event.stopPropagation();
+    
+ })) 
+
+ const specifications = {};
+ items.forEach(el => {
+     specifications(...el);
+
+ })
+ console.log(specifications);
