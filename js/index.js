@@ -117,8 +117,21 @@ renderCards(items);
 const modalWindow = document.querySelector('#modal');
 const renderModal = (device)=>{
     const cardBottom = renderCardBottom(device);
-    console.log(cardBottom);
     const modalItemSpecifications = cElem('div', 'modal-item-specifications');
+    const renderSpecifications = (name, value)=>{
+        const specifications = cElem('div', 'specifications');
+        const specificationsName = cElem('p', 'specifications__name');
+        specificationsName.innerText = name;
+        const specificationsValue = cElem('p', 'specifications__value');
+        specificationsValue.innerText = value;
+
+        specifications.append(specificationsName, specificationsValue);
+        modalItemSpecifications.append(specifications);
+    }
+    Object.keys(device).forEach(key =>{
+        renderSpecifications(key, device[key]);
+    });
+
     let btnDisabled = device.orderInfo.inStock == 0 ? 'disabled':''
     const modalContent = cElem('div', 'modal__content');
     modalContent.innerHTML = `
@@ -136,7 +149,7 @@ const renderModal = (device)=>{
                 </div>
             </div>
             <div class="modal-item-specifications">
-                
+                ${modalItemSpecifications.innerHTML}
             </div>
         </div>
     </div>

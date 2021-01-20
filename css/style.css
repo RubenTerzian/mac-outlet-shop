@@ -536,7 +536,12 @@ header {
   border-right: 1px solid #E2E2E2;
 }
 
+.modal__content__middle__wraper {
+  overflow: auto;
+}
+
 .modal__content__middle__wraper .item-title {
+  overflow: auto;
   font-size: 24px;
   font-weight: 700;
   color: #3B3E66;

@@ -388,7 +388,9 @@ header{
             border-left:1px solid #E2E2E2;
             border-right:1px solid #E2E2E2;
             &__wraper{
+                overflow: auto;
                 .item-title{
+                    overflow: auto;
                     font-size: 24px;
                     font-weight: 700;
                     color: #3B3E66;
