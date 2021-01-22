@@ -227,9 +227,10 @@ const createFilterItem = (name, nameForShow, units) =>{
     filterAside.append(filterItem);
     const paramArray =[];
     const objectParamArray =[];
-    items.forEach(el =>{
-        // if(el)
 
+    // take value "name" from all elements and put it into an array
+
+    items.forEach(el =>{
         if(typeof(el[name]) === 'string'){
             paramArray.push(el[name])
             paramArray.sort();
@@ -247,17 +248,23 @@ const createFilterItem = (name, nameForShow, units) =>{
             objectParamArray.push(el[name]) 
         }   
     })
+
+    // If array of items conteins array
     objectParamArray.forEach(el=>{
         for(let key in el){
             paramArray.push(el[key]);
         }
     })
+
+    // Create array with unic values
     const unicValueArray = paramArray.filter((element, index, array)=>{
         return array.indexOf(element) === index
     });
     
     const filterItemValue = cElem('div', 'filter__item__value');
     filterItem.append(filterItemValue);
+
+    // create render param function
     const renderParam =(param)=>{
         const filterParam = cElem('div', 'filter-param');
         filterParam.innerHTML= `
@@ -268,12 +275,35 @@ const createFilterItem = (name, nameForShow, units) =>{
         `
         filterItemValue.append(filterParam)
     }
+
+    // Sort array elements in ascending order
     unicValueArray.sort( (a, b) => a - b )
-    if(name !== 'display'){
+
+    // logic for rendering "filter__item__value"
+    if(name !== 'display' && name !== 'price'){
         unicValueArray.forEach(el =>{
             renderParam(el);
         })
-    }else{
+    }
+    if(name === 'price'){
+        const easyBasketFilter = cElem('div', 'easy-basket-filter');
+        const minValue = unicValueArray[0]
+        const maxValue = unicValueArray[unicValueArray.length-1]
+        easyBasketFilter.innerHTML=`
+            <div class="easy-basket-filter-info">
+                <p class="iLower"><input type="text" class="easy-basket-lower" value="${minValue}" min="${minValue}" max="${maxValue}" maxlength=4/></p>
+                <p class="iUpper"><input type="text" class="easy-basket-upper" value="${maxValue}" min="${minValue}" max="${maxValue}" maxlength=4/></p>
+            </div>
+            
+            <div class="easy-basket-filter-range">
+                <input type="range" class="lower range" min="${minValue}" max="${maxValue}" value="${minValue}"/>
+                <input type="range" class="upper range" min="${minValue}" max="${maxValue}" value="${maxValue}"/>
+                <div class="fill"></div>
+            </div>
+        `
+        filterItemValue.append(easyBasketFilter)
+    }
+    if(name === 'display'){
         const rangeArray =[]
         const l = unicValueArray.length
         const lastElemOfUniArray = unicValueArray[l-1]
@@ -304,8 +334,9 @@ createFilterItem('category', 'OS');
 createFilterItem('display', 'Display', 'inch');
 createFilterItem('wireless', 'Wireless Conection');
 
-const filterItems = document.querySelectorAll('.filter__item__name');
 
+// OPEN FILTER
+const filterItems = document.querySelectorAll('.filter__item__name');
 filterItems.forEach(el => el.addEventListener('click', event =>{
     event.path.forEach(el => 
             {if(el.className === 'filter__item__name'){ 
@@ -320,6 +351,7 @@ filterItems.forEach(el => el.addEventListener('click', event =>{
     }
     });
 }));
+
 
 
 

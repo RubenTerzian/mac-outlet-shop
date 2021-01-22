@@ -321,6 +321,7 @@ header {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   background-color: #EDF3FF;
+  border-bottom: 1px solid #dddddd;
   cursor: pointer;
 }
 
@@ -373,6 +374,16 @@ header {
   padding: 5px 0 15px 30px;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
+}
+
+.filter__item__value.active .range-wraper {
+  position: relative;
+}
+
+.filter__item__value.active .range-wraper input {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .filter__item__value.active .filter-param {
