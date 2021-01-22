@@ -18,7 +18,7 @@ const gElem = (param)=>{
     return elem;
 };
 
-const listContainer = gElem('.container');
+const listContainer = gElem('.cards-container');
 
 const renderCardBottom = device=>{
     const cardBottom = cElem('div', 'card__bottom');
@@ -33,7 +33,7 @@ const renderCardBottom = device=>{
         const pRAmount = cElem('p', 'positive-review__amount')
         pRAmount.innerText = device.orderInfo.reviews;
         const textPR = cElem ('p');
-        textPR.innerText = '% Positive reviews';
+        textPR.innerText = '%  Positive reviews';
         textWraper.append(pRAmount, textPR);
         
         const pRText = cElem('p');
@@ -118,19 +118,29 @@ const modalWindow = document.querySelector('#modal');
 const renderModal = (device)=>{
     const cardBottom = renderCardBottom(device);
     const modalItemSpecifications = cElem('div', 'modal-item-specifications');
-    const renderSpecifications = (name, value)=>{
+
+    // Render specifications
+    const renderSpecifications = (name, value, units)=>{
         const specifications = cElem('div', 'specifications');
         const specificationsName = cElem('p', 'specifications__name');
-        specificationsName.innerText = name;
+        specificationsName.innerText = `${name}: `;
         const specificationsValue = cElem('p', 'specifications__value');
-        specificationsValue.innerText = value;
+        specificationsValue.innerText = `${value} ${units || ''}`;
 
         specifications.append(specificationsName, specificationsValue);
         modalItemSpecifications.append(specifications);
     }
-    Object.keys(device).forEach(key =>{
-        renderSpecifications(key, device[key]);
-    });
+    const deviceKeys = Object.keys(device);
+    renderSpecifications('display', device.display, 'inch');
+    renderSpecifications('color', device.color.join('/  '));
+    renderSpecifications('chip', device.chip.name);
+    renderSpecifications('ram', device.ram, 'GB');
+    renderSpecifications('storage', device.storage, 'GB');
+    renderSpecifications('height', device.size.height, 'cm');
+    renderSpecifications('width', device.size.width, 'cm');
+    renderSpecifications('depth', device.size.depth, 'cm');
+    renderSpecifications('weight', device.size.weight*1000, 'g');
+    renderSpecifications('InTheBox', device.InTheBox.join('/  '));
 
     let btnDisabled = device.orderInfo.inStock == 0 ? 'disabled':''
     const modalContent = cElem('div', 'modal__content');
@@ -175,7 +185,7 @@ modalWindow.addEventListener('click', event =>{
 })
 
 
-const container = document.querySelector('.container');
+const container = document.querySelector('.cards-container');
 const card = document.querySelectorAll('.card');
 const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
 
@@ -199,9 +209,119 @@ btnAddToCart.forEach(el => el.addEventListener('click', event =>{
     
  })) 
 
- const specifications = {};
- items.forEach(el => {
-     specifications(...el);
 
- })
- console.log(specifications);
+//   ASIDE FILTER
+
+const createFilterItem = (name, nameForShow, units) =>{
+    const filterAside = document.querySelector('.filter');
+    const filterItem = cElem('div', 'filter__item');
+    filterItem.innerHTML= `
+    <div class="filter__item__name">
+        <p>${nameForShow || name}</p>
+        <div class="filter-arrow">
+            <img src="img/icons/filter-arrow.svg" alt="image">
+        </div>
+    </div>
+    `;
+
+    filterAside.append(filterItem);
+    const paramArray =[];
+    const objectParamArray =[];
+    items.forEach(el =>{
+        // if(el)
+
+        if(typeof(el[name]) === 'string'){
+            paramArray.push(el[name])
+            paramArray.sort();
+        }
+        if(typeof(el[name]) === 'number'){
+            if(el[name]%1 == 0){
+                const validNumb = el[name];
+                paramArray.push(validNumb)
+            }else{
+                const validNumb = el[name].toFixed(1);
+                paramArray.push(validNumb)
+            }
+        } 
+        if(Array.isArray(el[name])){
+            objectParamArray.push(el[name]) 
+        }   
+    })
+    objectParamArray.forEach(el=>{
+        for(let key in el){
+            paramArray.push(el[key]);
+        }
+    })
+    const unicValueArray = paramArray.filter((element, index, array)=>{
+        return array.indexOf(element) === index
+    });
+    
+    const filterItemValue = cElem('div', 'filter__item__value');
+    filterItem.append(filterItemValue);
+    const renderParam =(param)=>{
+        const filterParam = cElem('div', 'filter-param');
+        filterParam.innerHTML= `
+        <div class="filter-param__input">
+        <input type="checkbox">
+        </div>
+        <p>${param} ${units || ''}</p>
+        `
+        filterItemValue.append(filterParam)
+    }
+    unicValueArray.sort( (a, b) => a - b )
+    if(name !== 'display'){
+        unicValueArray.forEach(el =>{
+            renderParam(el);
+        })
+    }else{
+        const rangeArray =[]
+        const l = unicValueArray.length
+        const lastElemOfUniArray = unicValueArray[l-1]
+        const firstNumb = Math.floor(unicValueArray[0])
+        const secondNumb = firstNumb + Math.floor(lastElemOfUniArray/5)
+        const thirdNumb = secondNumb + Math.floor(lastElemOfUniArray/5)
+        const fourthNumb = thirdNumb + Math.floor(lastElemOfUniArray/5)
+        const fifthNumb = lastElemOfUniArray
+        rangeArray.push(firstNumb, secondNumb, thirdNumb, fourthNumb, fifthNumb)
+        for(let i=0; rangeArray.length>=1;){
+            if(rangeArray.length == 1){
+                const param = `+ ${rangeArray[i]}`
+                renderParam(param)
+                rangeArray.splice(i, 1);
+            }else{
+                const param = `${rangeArray[i]} - ${rangeArray[(i+1)]}`
+                renderParam(param)
+                rangeArray.splice(i, 1);
+            }
+        }
+    }
+}
+
+createFilterItem('price', 'Price', '$');
+createFilterItem('color', 'Color');
+createFilterItem('storage', 'Memory', 'GB');
+createFilterItem('category', 'OS');
+createFilterItem('display', 'Display', 'inch');
+createFilterItem('wireless', 'Wireless Conection');
+
+const filterItems = document.querySelectorAll('.filter__item__name');
+
+filterItems.forEach(el => el.addEventListener('click', event =>{
+    event.path.forEach(el => 
+            {if(el.className === 'filter__item__name'){ 
+                el.className = 'filter__item__name active';
+                el.parentNode.children[1].className ='filter__item__value active'
+                return
+        }
+        if(el.className === 'filter__item__name active'){ 
+            el.className = 'filter__item__name';
+            el.parentNode.children[1].className ='filter__item__value'
+            return
+    }
+    });
+}));
+
+
+
+
+
