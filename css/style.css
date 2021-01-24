@@ -393,6 +393,10 @@ header {
   margin-top: 20px;
 }
 
+.filter__item__value.active .filter-param p {
+  margin-right: 5px;
+}
+
 /* CARDS */
 .cards-container {
   display: -webkit-box;

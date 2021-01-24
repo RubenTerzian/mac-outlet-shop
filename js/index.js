@@ -8,7 +8,7 @@ const cElem = (tagName, className) =>{
 const gElem = (param)=>{
     const elem = document.querySelector(param);
     elem.clear = function(){
-        this.innerHtml = '';
+        this.innerHTML = '';
         return this;
     }
     elem.add = function(listOfElems){
@@ -184,22 +184,29 @@ modalWindow.addEventListener('click', event =>{
     };
 })
 
-
 const container = document.querySelector('.cards-container');
-const card = document.querySelectorAll('.card');
 const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
 
-// Show and render modal Window
+const showModal = ()=>{
+    const card = document.querySelectorAll('.card');
+    // Show and render modal Window
+    
+    card.forEach(el => el.addEventListener('click', event =>{
+        event.path.forEach(el => 
+                {if(el.className === 'card'){
+                    const item = items.find(dev=>dev.id == el.id)
+                    renderModal(item);
+                    modalWindow.setAttribute('class', 'modal');
+            }
+        });
+    }));
+}
+showModal();
 
-card.forEach(el => el.addEventListener('click', event =>{
-    event.path.forEach(el => 
-            {if(el.className === 'card'){
-                const item = items.find(dev=>dev.id == el.id)
-                renderModal(item);
-                modalWindow.setAttribute('class', 'modal');
-        }
-    });
-}));
+    
+    
+
+
 
 // Add to cart
 
@@ -215,6 +222,7 @@ btnAddToCart.forEach(el => el.addEventListener('click', event =>{
 const createFilterItem = (name, nameForShow, units) =>{
     const filterAside = document.querySelector('.filter');
     const filterItem = cElem('div', 'filter__item');
+    filterItem.id = name;
     filterItem.innerHTML= `
     <div class="filter__item__name">
         <p>${nameForShow || name}</p>
@@ -271,7 +279,7 @@ const createFilterItem = (name, nameForShow, units) =>{
         <div class="filter-param__input">
         <input type="checkbox">
         </div>
-        <p>${param} ${units || ''}</p>
+        <p>${param}</p><p>${units || ''}</p>
         `
         filterItemValue.append(filterParam)
     }
@@ -352,8 +360,132 @@ filterItems.forEach(el => el.addEventListener('click', event =>{
     });
 }));
 
+//  Find price inputs and take value
 
+const filterPriceInputsArray = []
+const crollLow = document.querySelector('.lower');
+const crollUp = document.querySelector('.upper');
+const filterPriceMinValueIpnut = document.querySelector('.easy-basket-lower');
+const filterPriceMaxValueIpnut = document.querySelector('.easy-basket-upper');
+filterPriceInputsArray.push(crollLow, crollUp, filterPriceMinValueIpnut, filterPriceMaxValueIpnut)
 
+const priceParam = {
+    min: +filterPriceMinValueIpnut.value,
+    max: +filterPriceMaxValueIpnut.value
+}
+
+const itemsForRenderByPriceGeneral = []
+// Render cards by price
+const renderByPrice = ()=>{
+    filterPriceInputsArray.forEach(el =>{
+        el.addEventListener('input',e=>{
+           
+            const itemsForRenderByPrice = []
+            if(  filterPriceMinValueIpnut.value.match(/^\d+$/) && filterPriceMaxValueIpnut.value.match(/^\d+$/) || (filterPriceMinValueIpnut.value === "" || filterPriceMaxValueIpnut.value === "")){
+                
+                priceParam.min = +filterPriceMinValueIpnut.value
+                priceParam.max = +filterPriceMaxValueIpnut.value
+                
+            } else{
+                filterPriceMinValueIpnut.value = priceParam.min;
+                filterPriceMaxValueIpnut.value = priceParam.max;
+            }
+            if(!checkBoxFilterElemArray.length){
+                items.forEach(el =>{
+                    // debugger;
+                    if(el.price>= priceParam.min && el.price <= priceParam.max){
+                        itemsForRenderByPrice.push(el);
+                    }
+                })
+                renderCards(itemsForRenderByPrice);
+                showModal()
+            }else{
+                console.log("тута")
+                checkBoxFilterElemArray.forEach(el =>{
+                    if(el.price>= priceParam.min && el.price <= priceParam.max){
+                        itemsForRenderByPrice.push(el);
+                    }
+                })
+                console.log(itemsForRenderByPrice);
+                renderCards(itemsForRenderByPrice);
+                showModal()
+            }
+            itemsForRenderByPriceGeneral.splice(0, 1, itemsForRenderByPrice)
+        })}
+    );
+}
+renderByPrice()
+
+//  Render cadrs with filters
+
+const checkBoxFilterElemArray = []
+const f = document.querySelectorAll('.filter-param__input')
+
+f.forEach(el =>{
+    
+    const param = el.nextElementSibling.innerText
+    const paramId = el.parentNode.parentNode.parentNode.id
+    
+    el.addEventListener('change', e=>{
+        if(e.target.checked){
+            // if(!itemsForRenderByPriceGeneral.length || !itemsForRenderByPriceGeneral[0].length){
+            //     items.forEach(el=>{
+            //         if(el[paramId] == param){
+            //             checkBoxFilterElemArray.push(el)
+            //         }  
+            //     })
+            //     renderCards(checkBoxFilterElemArray);
+            //     showModal()
+
+            // }else{
+            //     itemsForRenderByPriceGeneral[0].forEach(el=>{
+            //         if(el[paramId] == param){
+            //             checkBoxFilterElemArray.push(el)
+            //         }
+                    
+            //     })
+            //     renderCards(checkBoxFilterElemArray);
+            //     showModal();
+            // }
+            items.forEach(el=>{
+                if(el[paramId] == param){
+                    checkBoxFilterElemArray.push(el)
+                }
+                
+            })
+            
+            renderCards(checkBoxFilterElemArray);
+            showModal()
+            
+        }else{
+            const unchackedItems = []
+            checkBoxFilterElemArray.forEach((el)=>{
+                if(el[paramId] == param){
+                    unchackedItems.push(el)
+                }
+            })
+            unchackedItems.forEach(el=>{
+                checkBoxFilterElemArray.forEach((elem, index, arr)=>{
+                    if(el == elem){
+                        arr.splice(index, 1)
+                    }
+                })
+                renderCards(checkBoxFilterElemArray);
+                showModal();
+            })
+            if(!checkBoxFilterElemArray.length){
+                if(!itemsForRenderByPriceGeneral[0].length){
+                    renderCards(items);
+                    showModal();
+                }else{
+                    renderCards(itemsForRenderByPriceGeneral[0]);
+                    showModal();
+                }
+            }
+        }
+        
+    })
+})
 
 
 
