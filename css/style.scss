@@ -73,7 +73,7 @@ header{
 }
 
 .cart{
-    height: 505px;
+    max-height: 505px;
     width: 435px;
     position: absolute;
     top: 50px;
@@ -110,7 +110,7 @@ header{
 .items__wraper{
     display: flex;
     flex-direction: column;
-    height: 260px;
+    max-height: 260px;
     overflow: auto;
 }   
 
@@ -118,7 +118,7 @@ header{
     display: flex;
     justify-content: space-around;
     align-items: center;
-    min-height: 130px;
+    min-height: 129px;
     width: 100%;
     border-top: 1px solid #C4C4C4;
     &__img{

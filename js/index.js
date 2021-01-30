@@ -52,7 +52,7 @@ const renderCardBottom = device=>{
 
 const renderCard = device =>{
     const card = cElem('div','card');
-    card.id = device.id;
+    card.setAttribute('itemId', device.id);
         const cardTop = cElem('div','card__top');
             const favorite = cElem('div','favorite');
                 const imgFavorite = cElem('img');
@@ -144,6 +144,7 @@ const renderModal = (device)=>{
 
     let btnDisabled = device.orderInfo.inStock == 0 ? 'disabled':''
     const modalContent = cElem('div', 'modal__content');
+    modalContent.setAttribute('itemId', device.id)
     modalContent.innerHTML = `
     <div class="modal__content__left">
         <div class="modal-item-image">
@@ -174,6 +175,8 @@ const renderModal = (device)=>{
     </div>
     `
     modalWindow.append(modalContent);
+    const btnAddToCartModal = document.querySelector('.modal__content__right');
+    addToCart(btnAddToCartModal.children[2], device)
 }
 
 // Hide and clear madal window
@@ -185,7 +188,6 @@ modalWindow.addEventListener('click', event =>{
 })
 
 const container = document.querySelector('.cards-container');
-const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
 
 const showModal = ()=>{
     const card = document.querySelectorAll('.card');
@@ -194,7 +196,7 @@ const showModal = ()=>{
     card.forEach(el => el.addEventListener('click', event =>{
         event.path.forEach(el => 
                 {if(el.className === 'card'){
-                    const item = items.find(dev=>dev.id == el.id)
+                    const item = items.find(device=>device.id == el.attributes[1].value)
                     renderModal(item);
                     modalWindow.setAttribute('class', 'modal');
             }
@@ -202,19 +204,6 @@ const showModal = ()=>{
     }));
 }
 showModal();
-
-    
-    
-
-
-
-// Add to cart
-
-btnAddToCart.forEach(el => el.addEventListener('click', event =>{
-        console.log('btn');
-        event.stopPropagation();
-    
- })) 
 
 
 //   ASIDE FILTER
@@ -418,6 +407,7 @@ renderByPrice()
 
 const checkBoxFilterElemArray = []
 const f = document.querySelectorAll('.filter-param__input')
+
 // function for add elements to checkBoxFilterElemArray
 
 const addElemToCheckboxArray = (ArrayForAnalise, paramId, param)=>{
@@ -490,7 +480,6 @@ f.forEach(el =>{
               
             }
 
-
         }else{
             const unchackedItems = []
             checkBoxFilterElemArray.forEach((el)=>{
@@ -537,7 +526,6 @@ f.forEach(el =>{
             })
             unchackedItems.forEach(el=>{
                 checkBoxFilterElemArray.forEach((elem, index, arr)=>{
-                    console.log('ffff')
                     if(el == elem){
                         arr.splice(index, 1)
                     }
@@ -560,5 +548,109 @@ f.forEach(el =>{
     })
 })
 
+// OPEN CART
+
+const cartLogo = document.querySelector('.cart-logo')
+const cart = document.querySelector('.cart')
+cartLogo.addEventListener('click', e=>{
+    if(cart.classList[1]=== 'disabled'){
+        cart.setAttribute('class', 'cart')
+    }else{
+        cart.setAttribute('class', 'cart disabled')
+    }
+})
+
+// ADD TO CART
+
+const elemsInCart = []
+
+const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
+const itemsWraper = document.querySelector('.items__wraper')
+
+// Render cart item
+const renderCartItem = (device, amountOfItem)=>{
+const amount = amountOfItem;
+const cartItem = cElem('div', 'cart-item');
+cartItem.innerHTML =`
+    <div class="cart-item">
+        <div class="cart-item__img">
+            <img src="img/${device.imgUrl}" alt="image">
+        </div>
+        <div class="cart-item__info">
+            <p>${device.name}</p>
+            <span>$${device.price*amount}</span>
+        </div>
+        <div class="cart-item__amount-controller">
+            <button class="btn-left">
+                <img src="img/icons/arrow_left.svg" alt="image">
+            </button>
+            <p>${amount}</p>
+            <button class="btn-right">
+                <img src="img/icons/arrow_right.svg" alt="image">
+            </button>
+        </div>
+        <div class="cart-item__close-btn">
+            <button>
+                <img src="img/icons/close-cart.svg" alt="image">
+            </button>
+        </div>
+    </div>
+`
+itemsWraper.append(cartItem)
+}
 
 
+//Main logic for "add to cart"
+const addToCart = (btn, device)=>{
+    btn.addEventListener('click', event =>{
+        itemsWraper.innerHTML = ''
+        if(!elemsInCart.length){
+            elemsInCart.push({'element': device, 'amount': 1})
+        }else{
+            let isExist = false;
+            for(let key in elemsInCart){
+                if(elemsInCart[key]['element'] == device){
+                    console.log('a')
+                    elemsInCart[key].amount +=1
+                    
+                }else{
+                    for(let i=0; i<=key; i++){
+                        if(elemsInCart[i]['element'] == device){
+                            isExist = true;
+                        }
+                        console.log('____________________')
+                        console.log(elemsInCart[i]['element'])
+                        console.log(device)
+                    }
+                    if(!isExist){
+                        console.log('b')
+                        elemsInCart.push({'element': device, 'amount': 1});
+                    }
+                }
+               
+            }
+        }
+        elemsInCart.forEach(elOfArray=>{
+            renderCartItem(elOfArray['element'], elOfArray['amount'])
+        })
+        event.stopPropagation();
+
+    })
+}
+
+
+
+//  Finding devise by button
+btnAddToCart.forEach(el => {
+    let deviceId =''
+    if(el.offsetParent.attributes[1]){
+        deviceId = el.offsetParent.attributes[1].value
+    }else{
+        deviceId = el.parentNode.parentNode.attributes[1].value
+    }
+    items.forEach(itemsElement =>{
+        if(itemsElement.id == deviceId){
+            addToCart(el, itemsElement)
+        }
+    })
+}) 
