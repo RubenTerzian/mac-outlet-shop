@@ -360,7 +360,205 @@ filterItems.forEach(el => el.addEventListener('click', event =>{
     });
 }));
 
+//  Find price inputs and take value
 
+const filterPriceInputsArray = []
+const crollLow = document.querySelector('.lower');
+const crollUp = document.querySelector('.upper');
+const filterPriceMinValueIpnut = document.querySelector('.easy-basket-lower');
+const filterPriceMaxValueIpnut = document.querySelector('.easy-basket-upper');
+filterPriceInputsArray.push(crollLow, crollUp, filterPriceMinValueIpnut, filterPriceMaxValueIpnut)
+
+const priceParam = {
+    min: +filterPriceMinValueIpnut.value,
+    max: +filterPriceMaxValueIpnut.value
+}
+
+// Render cards by price
+
+const itemsForRenderByPriceGeneral = []
+const renderByPrice = ()=>{
+    filterPriceInputsArray.forEach(el =>{
+        el.addEventListener('input',e=>{
+           
+            const itemsForRenderByPrice = []
+            if(  filterPriceMinValueIpnut.value.match(/^\d+$/) && filterPriceMaxValueIpnut.value.match(/^\d+$/) || (filterPriceMinValueIpnut.value === "" || filterPriceMaxValueIpnut.value === "")){
+                
+                priceParam.min = +filterPriceMinValueIpnut.value
+                priceParam.max = +filterPriceMaxValueIpnut.value
+                
+            } else{
+                filterPriceMinValueIpnut.value = priceParam.min;
+                filterPriceMaxValueIpnut.value = priceParam.max;
+            }
+            if(!checkBoxFilterElemArray.length){
+                items.forEach(el =>{
+                    if(el.price>= priceParam.min && el.price <= priceParam.max){
+                        itemsForRenderByPrice.push(el);
+                    }
+                })
+                renderCards(itemsForRenderByPrice);
+                showModal()
+            }else{
+                checkBoxFilterElemArray.forEach(el =>{
+                    if(el.price>= priceParam.min && el.price <= priceParam.max){
+                        itemsForRenderByPrice.push(el);
+                    }
+                })
+                renderCards(itemsForRenderByPrice);
+                showModal()
+            }
+            itemsForRenderByPriceGeneral.splice(0, 1, itemsForRenderByPrice)
+        })}
+    );
+}
+renderByPrice()
+
+//  Render cadrs with checkbox filters
+
+const checkBoxFilterElemArray = []
+const f = document.querySelectorAll('.filter-param__input')
+// function for add elements to checkBoxFilterElemArray
+
+const addElemToCheckboxArray = (ArrayForAnalise, paramId, param)=>{
+    ArrayForAnalise.forEach(el=>{
+        if(!checkBoxFilterElemArray.includes(el)){
+
+            // add element for render if parametr contains array
+
+            if(Array.isArray(el[paramId])){
+                el[paramId].forEach(elem=>{
+                    if(elem == param){
+
+                        checkBoxFilterElemArray.push(el)
+                    }
+                })
+            }
+
+            // add element for render if parametr is  "display" 
+
+            if(paramId == 'display'){
+                const displayParam = []
+
+                // take value for render from string
+                param.split(' ').forEach(elem=>{
+                    if(elem.match(/\d/)){
+                        displayParam.push(+elem)
+                    } 
+                })
+
+                // compare display param from items with checkbox value
+                if(displayParam.length>=2){
+                    if(el[paramId]>=displayParam[0] && el[paramId]<=displayParam[1]){
+                        checkBoxFilterElemArray.push(el)
+                    }
+                }else{
+                    if(el[paramId]>=displayParam[0]){
+                        checkBoxFilterElemArray.push(el)
+                    }
+                }
+            }
+
+            //  add element for render if parametr contains primitive
+            if(el[paramId] == param){
+                checkBoxFilterElemArray.push(el)
+            }
+        }    
+    })
+}
+
+f.forEach(el =>{
+    
+    const param = el.nextElementSibling.innerText
+    const paramId = el.parentNode.parentNode.parentNode.id
+    
+    el.addEventListener('change', e=>{
+        if(e.target.checked){
+
+            if(!itemsForRenderByPriceGeneral.length || !itemsForRenderByPriceGeneral[0].length){
+                // add element to checkBoxFilterElemArray if itemsForRenderByPriceGeneral is ampty
+
+                addElemToCheckboxArray(items, paramId, param)
+                renderCards(checkBoxFilterElemArray);
+                showModal()
+            }else{
+              // add element to checkBoxFilterElemArray if itemsForRenderByPriceGeneral is NOT ampty
+
+              addElemToCheckboxArray(itemsForRenderByPriceGeneral[0], paramId, param)
+              renderCards(checkBoxFilterElemArray);
+              showModal()
+              
+            }
+
+
+        }else{
+            const unchackedItems = []
+            checkBoxFilterElemArray.forEach((el)=>{
+                
+                // add element to unchackedItems if parametr is  array 
+
+                if(Array.isArray(el[paramId])){
+                    el[paramId].forEach(elem=>{
+                        if(elem == param){
+                            unchackedItems.push(el)
+                        }
+                    })
+                }
+
+                // add element to unchackedItems if parametr is  "display" 
+
+                if(paramId == 'display'){
+                    const displayParam = []
+
+                    // take value from string
+                    param.split(' ').forEach(elem=>{
+                        if(elem.match(/\d/)){
+                            displayParam.push(+elem)
+                        } 
+                    })
+
+                    // compare display param from checkBoxFilterElemArray with checkbox value
+                    if(displayParam.length>=2){
+                        if(el[paramId]>=displayParam[0] && el[paramId]<=displayParam[1]){
+                            unchackedItems.push(el)
+                        }
+                    }else{
+                        if(el[paramId]>=displayParam[0]){
+                            unchackedItems.push(el)
+                        }
+                    }
+                }
+
+                // add element to unchackedItems if parametr is  primitive 
+
+                if(el[paramId] == param){
+                    unchackedItems.push(el)
+                }
+            })
+            unchackedItems.forEach(el=>{
+                checkBoxFilterElemArray.forEach((elem, index, arr)=>{
+                    console.log('ffff')
+                    if(el == elem){
+                        arr.splice(index, 1)
+                    }
+                })
+                if(!checkBoxFilterElemArray.length){
+                    if(!itemsForRenderByPriceGeneral.length || !itemsForRenderByPriceGeneral[0].length){
+                        renderCards(items);
+                        showModal();
+                    }else{
+                        renderByPrice();
+                        showModal();
+                    }
+                }else{
+                    renderCards(checkBoxFilterElemArray);
+                    showModal();
+                }
+            })
+        }
+        
+    })
+})
 
 
 
