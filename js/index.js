@@ -398,8 +398,9 @@ const renderByPrice = ()=>{
                 showModal()
             }
             itemsForRenderByPriceGeneral.splice(0, 1, itemsForRenderByPrice)
+            takeBtnAddToCart()
         })}
-    );
+        );
 }
 renderByPrice()
 
@@ -479,6 +480,7 @@ f.forEach(el =>{
               showModal()
               
             }
+            takeBtnAddToCart()
 
         }else{
             const unchackedItems = []
@@ -543,6 +545,7 @@ f.forEach(el =>{
                     showModal();
                 }
             })
+            takeBtnAddToCart()
         }
         
     })
@@ -563,16 +566,14 @@ cartLogo.addEventListener('click', e=>{
 // ADD TO CART
 
 const elemsInCart = []
-
-const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
-const itemsWraper = document.querySelector('.items__wraper')
+const itemsWraper = document.querySelector('.items__wraper');
 
 // Render cart item
 const renderCartItem = (device, amountOfItem)=>{
 const amount = amountOfItem;
 const cartItem = cElem('div', 'cart-item');
 cartItem.innerHTML =`
-    <div class="cart-item">
+    <div class="cart-item" itemid="${device.id}">
         <div class="cart-item__img">
             <img src="img/${device.imgUrl}" alt="image">
         </div>
@@ -597,60 +598,55 @@ cartItem.innerHTML =`
     </div>
 `
 itemsWraper.append(cartItem)
+deleteItemFromCart()
 }
 
-
-//Main logic for "add to cart"
+//Main logic for "add to cart" ТУТ ЕСТЬ ПРОБЛЕМЫ!!!!!
 const addToCart = (btn, device)=>{
     btn.addEventListener('click', event =>{
-        itemsWraper.innerHTML = ''
-        if(!elemsInCart.length){
-            elemsInCart.push({'element': device, 'amount': 1})
-        }else{
-            let isExist = false;
-            for(let key in elemsInCart){
-                if(elemsInCart[key]['element'] == device){
-                    console.log('a')
-                    elemsInCart[key].amount +=1
-                    
-                }else{
-                    for(let i=0; i<=key; i++){
-                        if(elemsInCart[i]['element'] == device){
-                            isExist = true;
-                        }
-                        console.log('____________________')
-                        console.log(elemsInCart[i]['element'])
-                        console.log(device)
-                    }
-                    if(!isExist){
-                        console.log('b')
-                        elemsInCart.push({'element': device, 'amount': 1});
-                    }
-                }
-               
-            }
-        }
-        elemsInCart.forEach(elOfArray=>{
-            renderCartItem(elOfArray['element'], elOfArray['amount'])
-        })
+        // itemsWraper.innerHTML = ''
+        renderCartItem(device, 1)
         event.stopPropagation();
 
     })
 }
 
-
-
-//  Finding devise by button
-btnAddToCart.forEach(el => {
-    let deviceId =''
-    if(el.offsetParent.attributes[1]){
-        deviceId = el.offsetParent.attributes[1].value
-    }else{
-        deviceId = el.parentNode.parentNode.attributes[1].value
-    }
-    items.forEach(itemsElement =>{
-        if(itemsElement.id == deviceId){
-            addToCart(el, itemsElement)
+//  Finding devise by button and add to cart
+const takeBtnAddToCart =()=>{
+    const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
+    btnAddToCart.forEach(el => {
+        let deviceId =''
+        if(el.offsetParent.attributes[1]){
+            deviceId = el.offsetParent.attributes[1].value
+        }else{
+            deviceId = el.parentNode.parentNode.attributes[1].value
         }
+        items.forEach(itemsElement =>{
+            if(itemsElement.id == deviceId){
+                addToCart(el, itemsElement)
+            }
+        })
+    }) 
+}
+
+takeBtnAddToCart();
+
+
+// Delete item from cart
+const deleteItemFromCart =()=>{
+    const deleteItemFromCartBtn = document.querySelectorAll('.cart-item__close-btn');
+    deleteItemFromCartBtn.forEach(el=>{
+        el.childNodes[1].addEventListener('click', e=>{
+            const elemId = el.parentNode.attributes[1].value
+            elemsInCart.forEach((elOfArray, index)=>{
+                console.log(elemsInCart)
+                if(elOfArray['element'].id == elemId){
+                    elemsInCart.splice(index, 1);
+                }
+                console.log(elemsInCart)
+            })
+           
+        })
     })
-}) 
+}
+
