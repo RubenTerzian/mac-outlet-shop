@@ -563,16 +563,32 @@ cartLogo.addEventListener('click', e=>{
     }
 })
 
-// ADD TO CART
+// ADD TO CART  /// DONE without local storage
 
 const elemsInCart = []
+const totalCartInfo = {
+    totalAmount: 0,
+    totalPrice: 0
+}
 const itemsWraper = document.querySelector('.items__wraper');
+const cartLogoTotalAmount = document.querySelector('.cart-logo__total-amount');
 
-// Render cart item
+// Render cart item and total info /// DONE
 const renderCartItem = (device, amountOfItem)=>{
 const amount = amountOfItem;
-const cartItem = cElem('div', 'cart-item');
-cartItem.innerHTML =`
+let classNameBtnLeft;
+let classNameBtnRight
+amount == 1?  classNameBtnLeft ='btn-left disabled' : classNameBtnLeft ='btn-left';
+amount == 4?  classNameBtnRight ='btn-right disabled' : classNameBtnRight ='btn-right';
+if(!elemsInCart.length){
+    itemsWraper.innerHTML =`
+    <div class="your-cart-is-ampty">
+        <h2>Your cart is ampty...</h2>
+    </div>
+    `
+}else{
+    const addwraper = cElem('div');
+    addwraper.innerHTML =`
     <div class="cart-item" itemid="${device.id}">
         <div class="cart-item__img">
             <img src="img/${device.imgUrl}" alt="image">
@@ -582,11 +598,11 @@ cartItem.innerHTML =`
             <span>$${device.price*amount}</span>
         </div>
         <div class="cart-item__amount-controller">
-            <button class="btn-left">
+            <button class="${classNameBtnLeft}">
                 <img src="img/icons/arrow_left.svg" alt="image">
             </button>
             <p>${amount}</p>
-            <button class="btn-right">
+            <button class="${classNameBtnRight}">
                 <img src="img/icons/arrow_right.svg" alt="image">
             </button>
         </div>
@@ -595,35 +611,69 @@ cartItem.innerHTML =`
                 <img src="img/icons/close-cart.svg" alt="image">
             </button>
         </div>
-    </div>
 `
-itemsWraper.append(cartItem)
-deleteItemFromCart()
+    itemsWraper.append(addwraper)       
 }
 
-//Main logic for "add to cart" ТУТ ЕСТЬ ПРОБЛЕМЫ!!!!!
+deleteItemFromCart()
+amountContolBtns()
+}
+
+const renderCartTotalInfo =(totalAmount, totalPrice)=>{
+    const cartTotalInfo = document.querySelector('.cart-items-total-info')
+    cartTotalInfo.innerHTML=`
+    <span>
+        <p>Total amount:</p>
+        <p>${totalAmount}</p>
+        <p>ptc.</p>
+    </span>
+    <span>
+        <p>Total price:</p>
+        <p>${totalPrice}</p>
+        <p>$</p>
+    </span>
+    `
+}
+
+//Main logic for "add to cart" /// DONE
 const addToCart = (btn, device)=>{
     btn.addEventListener('click', event =>{
-        // itemsWraper.innerHTML = ''
-        renderCartItem(device, 1)
+        let objInElemsInCart = elemsInCart.find(item=> item.device == device);
+        if(!objInElemsInCart){
+            elemsInCart.push({device: device, amount: 1})
+            totalCartInfo.totalAmount++
+            totalCartInfo.totalPrice += device.price
+        }else{
+            if(objInElemsInCart.amount<4){
+                objInElemsInCart.amount++
+                totalCartInfo.totalAmount++
+                totalCartInfo.totalPrice += device.price
+            }
+        }
+        cartLogoTotalAmount.innerText = totalCartInfo.totalAmount
+        itemsWraper.innerHTML = ''
         event.stopPropagation();
-
+        elemsInCart.forEach(el=>{
+            renderCartItem(el.device, el.amount)
+        })
+        renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
     })
 }
 
-//  Finding devise by button and add to cart
+//  Finding devise by button and add to cart /// DONE
 const takeBtnAddToCart =()=>{
+
     const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
-    btnAddToCart.forEach(el => {
+    btnAddToCart.forEach(btn => {
         let deviceId =''
-        if(el.offsetParent.attributes[1]){
-            deviceId = el.offsetParent.attributes[1].value
+        if(btn.offsetParent.attributes[1]){
+            deviceId = btn.offsetParent.attributes[1].value
         }else{
-            deviceId = el.parentNode.parentNode.attributes[1].value
+            deviceId = btn.parentNode.parentNode.attributes[1].value
         }
-        items.forEach(itemsElement =>{
-            if(itemsElement.id == deviceId){
-                addToCart(el, itemsElement)
+        items.forEach(device =>{
+            if(device.id == deviceId){
+                addToCart(btn, device)
             }
         })
     }) 
@@ -632,20 +682,86 @@ const takeBtnAddToCart =()=>{
 takeBtnAddToCart();
 
 
-// Delete item from cart
+// Delete item from cart  /// DONE
 const deleteItemFromCart =()=>{
     const deleteItemFromCartBtn = document.querySelectorAll('.cart-item__close-btn');
     deleteItemFromCartBtn.forEach(el=>{
         el.childNodes[1].addEventListener('click', e=>{
             const elemId = el.parentNode.attributes[1].value
             elemsInCart.forEach((elOfArray, index)=>{
-                console.log(elemsInCart)
-                if(elOfArray['element'].id == elemId){
+                if(elOfArray.device.id == elemId){
+
+                    let objInElemsInCart = elemsInCart.find(item=> item.device == elOfArray.device);
+                    totalCartInfo.totalPrice -= objInElemsInCart.device.price*objInElemsInCart.amount
+                    totalCartInfo.totalAmount -= objInElemsInCart.amount
+                    cartLogoTotalAmount.innerText = totalCartInfo.totalAmount
+
                     elemsInCart.splice(index, 1);
+
+                    itemsWraper.innerHTML = ''
+                    elemsInCart.forEach(el=>{
+                        renderCartItem(el.device, el.amount)
+                    })
+                    if(!elemsInCart.length){
+                        renderCartItem()
+                    }
+                    renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
                 }
-                console.log(elemsInCart)
             })
            
+        })
+    })
+}
+
+// Change in cart amount of items with amount control btn   /// DONE
+
+const amountContolBtns =()=>{
+    const plusOne = document.querySelectorAll('.btn-right');
+    const minusOne = document.querySelectorAll('.btn-left');
+    plusOne.forEach(el=>{
+        el.addEventListener('click', e=>{
+            const elemId = el.parentNode.parentNode.attributes[1].value
+            elemsInCart.forEach((elOfArray)=>{
+                if(elOfArray.device.id == elemId){
+
+                    let objInElemsInCart = elemsInCart.find(item=> item.device == elOfArray.device);
+                        objInElemsInCart.amount++
+                        totalCartInfo.totalAmount++
+                        totalCartInfo.totalPrice += objInElemsInCart.device.price
+
+                    itemsWraper.innerHTML = ''
+                    elemsInCart.forEach(el=>{
+                        renderCartItem(el.device, el.amount)
+                    })
+                    if(!elemsInCart.length){
+                        renderCartItem()
+                    }
+                    renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
+                }
+            })
+        })
+    })
+    minusOne.forEach(el=>{
+        el.addEventListener('click', e=>{
+            const elemId = el.parentNode.parentNode.attributes[1].value
+            elemsInCart.forEach((elOfArray)=>{
+                if(elOfArray.device.id == elemId){
+
+                    let objInElemsInCart = elemsInCart.find(item=> item.device == elOfArray.device);
+                        objInElemsInCart.amount--
+                        totalCartInfo.totalAmount--
+                        totalCartInfo.totalPrice -= objInElemsInCart.device.price
+
+                    itemsWraper.innerHTML = ''
+                    elemsInCart.forEach(el=>{
+                        renderCartItem(el.device, el.amount)
+                    })
+                    if(!elemsInCart.length){
+                        renderCartItem()
+                    }
+                    renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
+                }
+            })
         })
     })
 }
