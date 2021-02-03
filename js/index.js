@@ -580,7 +580,7 @@ let classNameBtnLeft;
 let classNameBtnRight
 amount == 1?  classNameBtnLeft ='btn-left disabled' : classNameBtnLeft ='btn-left';
 amount == 4?  classNameBtnRight ='btn-right disabled' : classNameBtnRight ='btn-right';
-if(!elemsInCart.length){
+if(!elemsInCart.length ){
     itemsWraper.innerHTML =`
     <div class="your-cart-is-ampty">
         <h2>Your cart is ampty...</h2>
@@ -617,6 +617,7 @@ if(!elemsInCart.length){
 
 deleteItemFromCart()
 amountContolBtns()
+renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
 }
 
 const renderCartTotalInfo =(totalAmount, totalPrice)=>{
@@ -634,6 +635,7 @@ const renderCartTotalInfo =(totalAmount, totalPrice)=>{
     </span>
     `
 }
+
 
 //Main logic for "add to cart" /// DONE
 const addToCart = (btn, device)=>{
@@ -656,7 +658,8 @@ const addToCart = (btn, device)=>{
         elemsInCart.forEach(el=>{
             renderCartItem(el.device, el.amount)
         })
-        renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
+        addKeyValueInLocalStorage('elemsInCart', elemsInCart)
+        addKeyValueInLocalStorage('totalCartInfo', totalCartInfo)
     })
 }
 
@@ -677,9 +680,11 @@ const takeBtnAddToCart =()=>{
             }
         })
     }) 
+
 }
 
 takeBtnAddToCart();
+
 
 
 // Delete item from cart  /// DONE
@@ -705,7 +710,8 @@ const deleteItemFromCart =()=>{
                     if(!elemsInCart.length){
                         renderCartItem()
                     }
-                    renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
+                    addKeyValueInLocalStorage('elemsInCart', elemsInCart)
+                    addKeyValueInLocalStorage('totalCartInfo', totalCartInfo)
                 }
             })
            
@@ -737,6 +743,8 @@ const amountContolBtns =()=>{
                         renderCartItem()
                     }
                     renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
+                    addKeyValueInLocalStorage('elemsInCart', elemsInCart)
+                    addKeyValueInLocalStorage('totalCartInfo', totalCartInfo)
                 }
             })
         })
@@ -760,9 +768,48 @@ const amountContolBtns =()=>{
                         renderCartItem()
                     }
                     renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
+                    addKeyValueInLocalStorage('elemsInCart', elemsInCart)
+                    addKeyValueInLocalStorage('totalCartInfo', totalCartInfo)
                 }
             })
         })
     })
 }
+
+// Local storage
+const addKeyValueInLocalStorage = (key, value)=>{
+    if(localStorage.getItem(key)){
+        if(typeof value === String){
+            localStorage[key] = value
+        }
+        if(typeof value === 'function')
+        {
+            return
+        }else{
+            localStorage[key] = JSON.stringify(value)
+        }
+    }else{
+        if(typeof value === String){
+            localStorage.setItem(key, value)
+        }
+        if(typeof value === 'function')
+        {
+            return
+        }else{
+            localStorage.setItem(key, JSON.stringify(value)) 
+        }
+    }
+}
+
+// Upload cart from local storage
+
+const takeKeyValueFromLocalStorage = (key)=>{
+    let ElemFromLocalStorage = JSON.parse(localStorage.getItem(key))
+    return ElemFromLocalStorage
+}
+
+takeKeyValueFromLocalStorage('elemsInCart').forEach(el=>{
+    renderCartItem(el.device, el.amount)
+})
+
 
