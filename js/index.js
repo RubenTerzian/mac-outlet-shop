@@ -20,97 +20,6 @@ const gElem = (param)=>{
 
 const listContainer = gElem('.cards-container');
 
-const renderCardBottom = device=>{
-    const cardBottom = cElem('div', 'card__bottom');
-        const favoriteFilled = cElem('div','favorite');
-        const imgFavoriteFilled = cElem('img');
-        imgFavoriteFilled.src = 'img/icons/like_filled 1.svg';
-        imgFavoriteFilled.alt = 'Image';
-        favoriteFilled.append(imgFavoriteFilled);
-        
-        const positiveReview = cElem('span', 'positive-review');
-        const textWraper = cElem('div');
-        const pRAmount = cElem('p', 'positive-review__amount')
-        pRAmount.innerText = device.orderInfo.reviews;
-        const textPR = cElem ('p');
-        textPR.innerText = '%  Positive reviews';
-        textWraper.append(pRAmount, textPR);
-        
-        const pRText = cElem('p');
-        pRText.innerText = 'Above avarage';
-        positiveReview.append(textWraper, pRText);
-        
-        const ordersWraper = cElem('span', 'orders');
-        const ordersAmount = cElem('p', 'oreders__amount');
-        ordersAmount.innerText = '527'
-        const ordersText = cElem('p');
-        ordersText.innerText = 'Orders';
-        ordersWraper.append(ordersAmount, ordersText);
-    cardBottom.append(favoriteFilled, positiveReview, ordersWraper);
-    return cardBottom;
-}
-
-const renderCard = device =>{
-    const card = cElem('div','card');
-    card.setAttribute('itemId', device.id);
-        const cardTop = cElem('div','card__top');
-            const favorite = cElem('div','favorite');
-                const imgFavorite = cElem('img');
-                imgFavorite.src = 'img/icons/like_empty.svg';
-                imgFavorite.alt = 'Image';
-            favorite.append(imgFavorite);
-
-            const itemImageWraper = cElem('div', 'item-image');
-                const itemImage = cElem('img');
-                itemImage.src = `img/${device.imgUrl}`;
-            itemImageWraper.append(itemImage);
-
-            const h6 = cElem('h6');
-            h6.innerText = device.name;
-            const leftInStock = cElem('span', 'left-in-stock');
-                const leftInStockImgWraper = cElem('span', 'left-in-stock__check');
-                    const leftInStockImg = cElem('img');
-                    leftInStockImgWraper.append(leftInStockImg);
-                    
-                    const amountOfItems = cElem('span', 'left-in-stock__amount-of-items');
-                    amountOfItems.innerText = device.orderInfo.inStock;
-                    const textLIS = cElem('p');
-                    textLIS.innerText = 'left in stock';
-                    leftInStock.append(leftInStockImgWraper, amountOfItems, textLIS);
-                    
-                    const priceWraper = cElem('span', 'price');
-                    const textP = cElem('p');
-                    textP.innerText = 'Price: ';
-                    const priceAmount = cElem('span', 'price__amount');
-                    priceAmount.innerText = device.price;
-                    const priceCurrency = cElem('span', 'price__currency');
-                    priceCurrency.innerText = '$';
-                    priceWraper.append(textP, priceAmount, priceCurrency);
-                    
-                    const btnAddToCart = cElem('button', 'btn-add-to-cart');
-                    btnAddToCart.innerText = 'Add to cart';
-                    if(amountOfItems.innerText != 0){
-                        leftInStockImg.src = 'img/icons/check 1.svg';
-                    }else{
-                        leftInStockImg.src = "img/icons/close 1.svg";
-                        leftInStockImgWraper.setAttribute('class', 'left-in-stock__zero');
-                        btnAddToCart.setAttribute('disabled', '');
-                    }
-        cardTop.append(favorite,itemImageWraper, h6, leftInStock, priceWraper, btnAddToCart);
-        
-        const cardBottom = renderCardBottom(device);
-        card.append(cardTop, cardBottom);
-        
-        return card;
-    };
-
-const renderCards = list =>{
-    const elems = list.map(item => renderCard(item));
-    listContainer.clear().add(elems);
-};
-
-renderCards(items);
-
 //   Render modal window of element
 
 
@@ -144,7 +53,6 @@ const renderModal = (device)=>{
 
     let btnDisabled = device.orderInfo.inStock == 0 ? 'disabled':''
     const modalContent = cElem('div', 'modal__content');
-    modalContent.setAttribute('itemId', device.id)
     modalContent.innerHTML = `
     <div class="modal__content__left">
         <div class="modal-item-image">
@@ -189,22 +97,16 @@ modalWindow.addEventListener('click', event =>{
 
 const container = document.querySelector('.cards-container');
 
-const showModal = ()=>{
-    const card = document.querySelectorAll('.card');
+const showModal = (card, item)=>{
     // Show and render modal Window
     
-    card.forEach(el => el.addEventListener('click', event =>{
-        event.path.forEach(el => 
-                {if(el.className === 'card'){
-                    const item = items.find(device=>device.id == el.attributes[1].value)
-                    renderModal(item);
-                    modalWindow.setAttribute('class', 'modal');
-            }
-        });
-    }));
-}
-showModal();
+    card.addEventListener('click', () =>{
 
+        renderModal(item);
+        modalWindow.setAttribute('class', 'modal');
+    })
+       
+};
 
 //   ASIDE FILTER
 
@@ -329,7 +231,7 @@ createFilterItem('color', 'Color');
 createFilterItem('storage', 'Memory', 'GB');
 createFilterItem('category', 'OS');
 createFilterItem('display', 'Display', 'inch');
-createFilterItem('wireless', 'Wireless Conection');
+
 
 
 // OPEN FILTER
@@ -358,198 +260,107 @@ const filterPriceMinValueIpnut = document.querySelector('.easy-basket-lower');
 const filterPriceMaxValueIpnut = document.querySelector('.easy-basket-upper');
 filterPriceInputsArray.push(crollLow, crollUp, filterPriceMinValueIpnut, filterPriceMaxValueIpnut)
 
-const priceParam = {
-    min: +filterPriceMinValueIpnut.value,
-    max: +filterPriceMaxValueIpnut.value
+const renderConfig ={
+    priceParam: {
+        min: +filterPriceMinValueIpnut.value,
+        max: +filterPriceMaxValueIpnut.value
+    },
+    checkboxParam: {
+        color: [],
+        storage: [],
+        category: [],
+        display: []
+    }
 }
 
-// Render cards by price
 
-const itemsForRenderByPriceGeneral = []
-const renderByPrice = ()=>{
+const filterRender = () =>{
+
+    const filteringArray = ()=>{
+        const arrayForRender = items.filter(el =>{
+            let result;
+            if(renderConfig.checkboxParam.color.length ||
+                renderConfig.checkboxParam.storage.length ||
+                renderConfig.checkboxParam.category.length ||
+                renderConfig.checkboxParam.display.length
+            ){
+                for(let checkboxCategory of Object.keys(renderConfig.checkboxParam)){
+                    const currentCategoryArray = renderConfig.checkboxParam[checkboxCategory];
+                    if(currentCategoryArray.length){
+                        for(let item of currentCategoryArray){
+                            if(checkboxCategory == 'display'){
+                                const displayParam = []
+
+                                // take value for render from string
+                                item.split(' ').forEach(elem=>{
+                                    if(elem.match(/\d/)){
+                                        displayParam.push(+elem)
+                                    } 
+                                })
+
+                                // compare display param from items with checkbox value
+                                if(displayParam.length>=2){
+                                    if((el[checkboxCategory]>=displayParam[0] && el[checkboxCategory]<=displayParam[1])
+                                    && (renderConfig.priceParam.min <= el.price && el.price <= renderConfig.priceParam.max )){
+                                        result = true
+                                    }
+                                }else{
+                                    if((el[checkboxCategory]>=displayParam[0])
+                                    && (renderConfig.priceParam.min <= el.price && el.price <= renderConfig.priceParam.max )){
+                                        result = true;
+                                    }
+                                }
+                            }else{
+                                if(((el[checkboxCategory]+"").includes(item)) 
+                                && (renderConfig.priceParam.min <= el.price && el.price <= renderConfig.priceParam.max )){
+                                    result = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                return result
+            }else{
+                return renderConfig.priceParam.min <= el.price && el.price <= renderConfig.priceParam.max
+            }
+        })
+        return arrayForRender
+    }
+
     filterPriceInputsArray.forEach(el =>{
         el.addEventListener('input',e=>{
-           
-            const itemsForRenderByPrice = []
-            if(  filterPriceMinValueIpnut.value.match(/^\d+$/) && filterPriceMaxValueIpnut.value.match(/^\d+$/) || (filterPriceMinValueIpnut.value === "" || filterPriceMaxValueIpnut.value === "")){
+            if(  filterPriceMinValueIpnut.value.match(/^\d+$/) && filterPriceMaxValueIpnut.value.match(/^\d+$/) 
+                || (filterPriceMinValueIpnut.value === "" || filterPriceMaxValueIpnut.value === "")){
                 
-                priceParam.min = +filterPriceMinValueIpnut.value
-                priceParam.max = +filterPriceMaxValueIpnut.value
+                    renderConfig.priceParam.min = +filterPriceMinValueIpnut.value
+                    renderConfig.priceParam.max = +filterPriceMaxValueIpnut.value
                 
             } else{
-                filterPriceMinValueIpnut.value = priceParam.min;
-                filterPriceMaxValueIpnut.value = priceParam.max;
+                filterPriceMinValueIpnut.value = renderConfig.priceParam.min;
+                filterPriceMaxValueIpnut.value = renderConfig.priceParam.max;
             }
-            if(!checkBoxFilterElemArray.length){
-                items.forEach(el =>{
-                    if(el.price>= priceParam.min && el.price <= priceParam.max){
-                        itemsForRenderByPrice.push(el);
-                    }
-                })
-                renderCards(itemsForRenderByPrice);
-                showModal()
-            }else{
-                checkBoxFilterElemArray.forEach(el =>{
-                    if(el.price>= priceParam.min && el.price <= priceParam.max){
-                        itemsForRenderByPrice.push(el);
-                    }
-                })
-                renderCards(itemsForRenderByPrice);
-                showModal()
-            }
-            itemsForRenderByPriceGeneral.splice(0, 1, itemsForRenderByPrice)
-            takeBtnAddToCart()
+            renderCards(filteringArray())
+
         })}
-        );
-}
-renderByPrice()
+    );
+    const f = document.querySelectorAll('.filter-param__input')
 
-//  Render cadrs with checkbox filters
-
-const checkBoxFilterElemArray = []
-const f = document.querySelectorAll('.filter-param__input')
-
-// function for add elements to checkBoxFilterElemArray
-
-const addElemToCheckboxArray = (ArrayForAnalise, paramId, param)=>{
-    ArrayForAnalise.forEach(el=>{
-        if(!checkBoxFilterElemArray.includes(el)){
-
-            // add element for render if parametr contains array
-
-            if(Array.isArray(el[paramId])){
-                el[paramId].forEach(elem=>{
-                    if(elem == param){
-
-                        checkBoxFilterElemArray.push(el)
-                    }
-                })
-            }
-
-            // add element for render if parametr is  "display" 
-
-            if(paramId == 'display'){
-                const displayParam = []
-
-                // take value for render from string
-                param.split(' ').forEach(elem=>{
-                    if(elem.match(/\d/)){
-                        displayParam.push(+elem)
-                    } 
-                })
-
-                // compare display param from items with checkbox value
-                if(displayParam.length>=2){
-                    if(el[paramId]>=displayParam[0] && el[paramId]<=displayParam[1]){
-                        checkBoxFilterElemArray.push(el)
-                    }
-                }else{
-                    if(el[paramId]>=displayParam[0]){
-                        checkBoxFilterElemArray.push(el)
-                    }
-                }
-            }
-
-            //  add element for render if parametr contains primitive
-            if(el[paramId] == param){
-                checkBoxFilterElemArray.push(el)
-            }
-        }    
-    })
-}
-
-f.forEach(el =>{
-    
-    const param = el.nextElementSibling.innerText
-    const paramId = el.parentNode.parentNode.parentNode.id
-    
-    el.addEventListener('change', e=>{
-        if(e.target.checked){
-
-            if(!itemsForRenderByPriceGeneral.length || !itemsForRenderByPriceGeneral[0].length){
-                // add element to checkBoxFilterElemArray if itemsForRenderByPriceGeneral is ampty
-
-                addElemToCheckboxArray(items, paramId, param)
-                renderCards(checkBoxFilterElemArray);
-                showModal()
+    f.forEach(el =>{
+        const paramId = el.parentNode.parentNode.parentNode.id
+        el.addEventListener('change', e=>{
+            const value = e.target.parentNode.nextElementSibling.innerText
+            if(e.target.checked){
+                renderConfig.checkboxParam[paramId].push(value)
             }else{
-              // add element to checkBoxFilterElemArray if itemsForRenderByPriceGeneral is NOT ampty
-
-              addElemToCheckboxArray(itemsForRenderByPriceGeneral[0], paramId, param)
-              renderCards(checkBoxFilterElemArray);
-              showModal()
-              
+                const currentElem = renderConfig.checkboxParam[paramId].find(el => el == value)
+                const currentElemIndex = renderConfig.checkboxParam[paramId].indexOf(currentElem);
+                renderConfig.checkboxParam[paramId].splice(currentElemIndex, 1)
             }
-            takeBtnAddToCart()
-
-        }else{
-            const unchackedItems = []
-            checkBoxFilterElemArray.forEach((el)=>{
-                
-                // add element to unchackedItems if parametr is  array 
-
-                if(Array.isArray(el[paramId])){
-                    el[paramId].forEach(elem=>{
-                        if(elem == param){
-                            unchackedItems.push(el)
-                        }
-                    })
-                }
-
-                // add element to unchackedItems if parametr is  "display" 
-
-                if(paramId == 'display'){
-                    const displayParam = []
-
-                    // take value from string
-                    param.split(' ').forEach(elem=>{
-                        if(elem.match(/\d/)){
-                            displayParam.push(+elem)
-                        } 
-                    })
-
-                    // compare display param from checkBoxFilterElemArray with checkbox value
-                    if(displayParam.length>=2){
-                        if(el[paramId]>=displayParam[0] && el[paramId]<=displayParam[1]){
-                            unchackedItems.push(el)
-                        }
-                    }else{
-                        if(el[paramId]>=displayParam[0]){
-                            unchackedItems.push(el)
-                        }
-                    }
-                }
-
-                // add element to unchackedItems if parametr is  primitive 
-
-                if(el[paramId] == param){
-                    unchackedItems.push(el)
-                }
-            })
-            unchackedItems.forEach(el=>{
-                checkBoxFilterElemArray.forEach((elem, index, arr)=>{
-                    if(el == elem){
-                        arr.splice(index, 1)
-                    }
-                })
-                if(!checkBoxFilterElemArray.length){
-                    if(!itemsForRenderByPriceGeneral.length || !itemsForRenderByPriceGeneral[0].length){
-                        renderCards(items);
-                        showModal();
-                    }else{
-                        renderByPrice();
-                        showModal();
-                    }
-                }else{
-                    renderCards(checkBoxFilterElemArray);
-                    showModal();
-                }
-            })
-            takeBtnAddToCart()
-        }
-        
+            renderCards(filteringArray())
+        })
     })
-})
+}
+filterRender()
 
 // OPEN CART
 
@@ -575,49 +386,49 @@ const cartLogoTotalAmount = document.querySelector('.cart-logo__total-amount');
 
 // Render cart item and total info /// DONE
 const renderCartItem = (device, amountOfItem)=>{
-const amount = amountOfItem;
-let classNameBtnLeft;
-let classNameBtnRight
-amount == 1?  classNameBtnLeft ='btn-left disabled' : classNameBtnLeft ='btn-left';
-amount == 4?  classNameBtnRight ='btn-right disabled' : classNameBtnRight ='btn-right';
-if(!elemsInCart.length ){
-    itemsWraper.innerHTML =`
-    <div class="your-cart-is-ampty">
-        <h2>Your cart is ampty...</h2>
-    </div>
+    const amount = amountOfItem;
+    let classNameBtnLeft;
+    let classNameBtnRight
+    amount == 1?  classNameBtnLeft ='btn-left disabled' : classNameBtnLeft ='btn-left';
+    amount == 4?  classNameBtnRight ='btn-right disabled' : classNameBtnRight ='btn-right';
+    if(!elemsInCart.length){
+        itemsWraper.innerHTML =`
+        <div class="your-cart-is-ampty">
+            <h2>Your cart is ampty...</h2>
+        </div>
+        `
+    }else{
+        const addwraper = cElem('div');
+        addwraper.innerHTML =`
+        <div class="cart-item" itemid="${device.id}">
+            <div class="cart-item__img">
+                <img src="img/${device.imgUrl}" alt="image">
+            </div>
+            <div class="cart-item__info">
+                <p>${device.name}</p>
+                <span>$${device.price*amount}</span>
+            </div>
+            <div class="cart-item__amount-controller">
+                <button class="${classNameBtnLeft}">
+                    <img src="img/icons/arrow_left.svg" alt="image">
+                </button>
+                <p>${amount}</p>
+                <button class="${classNameBtnRight}">
+                    <img src="img/icons/arrow_right.svg" alt="image">
+                </button>
+            </div>
+            <div class="cart-item__close-btn">
+                <button>
+                    <img src="img/icons/close-cart.svg" alt="image">
+                </button>
+            </div>
     `
-}else{
-    const addwraper = cElem('div');
-    addwraper.innerHTML =`
-    <div class="cart-item" itemid="${device.id}">
-        <div class="cart-item__img">
-            <img src="img/${device.imgUrl}" alt="image">
-        </div>
-        <div class="cart-item__info">
-            <p>${device.name}</p>
-            <span>$${device.price*amount}</span>
-        </div>
-        <div class="cart-item__amount-controller">
-            <button class="${classNameBtnLeft}">
-                <img src="img/icons/arrow_left.svg" alt="image">
-            </button>
-            <p>${amount}</p>
-            <button class="${classNameBtnRight}">
-                <img src="img/icons/arrow_right.svg" alt="image">
-            </button>
-        </div>
-        <div class="cart-item__close-btn">
-            <button>
-                <img src="img/icons/close-cart.svg" alt="image">
-            </button>
-        </div>
-`
-    itemsWraper.append(addwraper)       
-}
-
-deleteItemFromCart()
-amountContolBtns()
-renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
+        itemsWraper.append(addwraper)       
+    }
+    console.log(elemsInCart)
+    deleteItemFromCart()
+    amountContolBtns()
+    renderCartTotalInfo(totalCartInfo.totalAmount, totalCartInfo.totalPrice)
 }
 
 const renderCartTotalInfo =(totalAmount, totalPrice)=>{
@@ -635,7 +446,6 @@ const renderCartTotalInfo =(totalAmount, totalPrice)=>{
     </span>
     `
 }
-
 
 //Main logic for "add to cart" /// DONE
 const addToCart = (btn, device)=>{
@@ -663,27 +473,98 @@ const addToCart = (btn, device)=>{
     })
 }
 
-//  Finding devise by button and add to cart /// DONE
-const takeBtnAddToCart =()=>{
-
-    const btnAddToCart = document.querySelectorAll('.btn-add-to-cart');
-    btnAddToCart.forEach(btn => {
-        let deviceId =''
-        if(btn.offsetParent.attributes[1]){
-            deviceId = btn.offsetParent.attributes[1].value
-        }else{
-            deviceId = btn.parentNode.parentNode.attributes[1].value
-        }
-        items.forEach(device =>{
-            if(device.id == deviceId){
-                addToCart(btn, device)
-            }
-        })
-    }) 
-
+const renderCardBottom = device=>{
+    const cardBottom = cElem('div', 'card__bottom');
+        const favoriteFilled = cElem('div','favorite');
+        const imgFavoriteFilled = cElem('img');
+        imgFavoriteFilled.src = 'img/icons/like_filled 1.svg';
+        imgFavoriteFilled.alt = 'Image';
+        favoriteFilled.append(imgFavoriteFilled);
+        
+        const positiveReview = cElem('span', 'positive-review');
+        const textWraper = cElem('div');
+        const pRAmount = cElem('p', 'positive-review__amount')
+        pRAmount.innerText = device.orderInfo.reviews;
+        const textPR = cElem ('p');
+        textPR.innerText = '%  Positive reviews';
+        textWraper.append(pRAmount, textPR);
+        
+        const pRText = cElem('p');
+        pRText.innerText = 'Above avarage';
+        positiveReview.append(textWraper, pRText);
+        
+        const ordersWraper = cElem('span', 'orders');
+        const ordersAmount = cElem('p', 'oreders__amount');
+        ordersAmount.innerText = '527'
+        const ordersText = cElem('p');
+        ordersText.innerText = 'Orders';
+        ordersWraper.append(ordersAmount, ordersText);
+    cardBottom.append(favoriteFilled, positiveReview, ordersWraper);
+    return cardBottom;
 }
 
-takeBtnAddToCart();
+const renderCard = device =>{
+    const card = cElem('div','card');
+        const cardTop = cElem('div','card__top');
+            const favorite = cElem('div','favorite');
+                const imgFavorite = cElem('img');
+                imgFavorite.src = 'img/icons/like_empty.svg';
+                imgFavorite.alt = 'Image';
+            favorite.append(imgFavorite);
+
+            const itemImageWraper = cElem('div', 'item-image');
+                const itemImage = cElem('img');
+                itemImage.src = `img/${device.imgUrl}`;
+            itemImageWraper.append(itemImage);
+
+            const h6 = cElem('h6');
+            h6.innerText = device.name;
+            const leftInStock = cElem('span', 'left-in-stock');
+                const leftInStockImgWraper = cElem('span', 'left-in-stock__check');
+                    const leftInStockImg = cElem('img');
+                    leftInStockImgWraper.append(leftInStockImg);
+                    
+                    const amountOfItems = cElem('span', 'left-in-stock__amount-of-items');
+                    amountOfItems.innerText = device.orderInfo.inStock;
+                    const textLIS = cElem('p');
+                    textLIS.innerText = 'left in stock';
+                    leftInStock.append(leftInStockImgWraper, amountOfItems, textLIS);
+                    
+                    const priceWraper = cElem('span', 'price');
+                    const textP = cElem('p');
+                    textP.innerText = 'Price: ';
+                    const priceAmount = cElem('span', 'price__amount');
+                    priceAmount.innerText = device.price;
+                    const priceCurrency = cElem('span', 'price__currency');
+                    priceCurrency.innerText = '$';
+                    priceWraper.append(textP, priceAmount, priceCurrency);
+                    
+                    const btnAddToCart = cElem('button', 'btn-add-to-cart');
+                    btnAddToCart.innerText = 'Add to cart';
+                    if(amountOfItems.innerText != 0){
+                        leftInStockImg.src = 'img/icons/check 1.svg';
+                    }else{
+                        leftInStockImg.src = "img/icons/close 1.svg";
+                        leftInStockImgWraper.setAttribute('class', 'left-in-stock__zero');
+                        btnAddToCart.setAttribute('disabled', '');
+                    }
+        cardTop.append(favorite,itemImageWraper, h6, leftInStock, priceWraper, btnAddToCart);
+        
+        const cardBottom = renderCardBottom(device);
+        card.append(cardTop, cardBottom);
+        
+        showModal(card, device)
+        addToCart(btnAddToCart, device)
+        return card;
+    };
+
+const renderCards = list =>{
+    const elems = list.map(item => renderCard(item));
+    listContainer.clear().add(elems);
+};
+
+renderCards(items);
+
 
 
 
@@ -776,6 +657,8 @@ const amountContolBtns =()=>{
     })
 }
 
+renderCartItem();
+
 // Local storage
 const addKeyValueInLocalStorage = (key, value)=>{
     if(localStorage.getItem(key)){
@@ -803,13 +686,14 @@ const addKeyValueInLocalStorage = (key, value)=>{
 
 // Upload cart from local storage
 
-const takeKeyValueFromLocalStorage = (key)=>{
-    let ElemFromLocalStorage = JSON.parse(localStorage.getItem(key))
-    return ElemFromLocalStorage
-}
+// const takeKeyValueFromLocalStorage = (key)=>{
+//     let ElemFromLocalStorage = JSON.parse(localStorage.getItem(key))
+//     return ElemFromLocalStorage
+// }
 
-takeKeyValueFromLocalStorage('elemsInCart').forEach(el=>{
-    renderCartItem(el.device, el.amount)
-})
+// takeKeyValueFromLocalStorage('elemsInCart').forEach(el=>{
+//     renderCartItem(el.device, el.amount)
+// })
+
 
 
